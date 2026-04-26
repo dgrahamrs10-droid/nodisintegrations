@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(@\\(\"C:\\\\Program Files\\\\nodejs\\\\node.exe\", \"C:\\\\Program Files \\(x86\\)\\\\nodejs\\\\node.exe\", \"$env:LOCALAPPDATA\\\\Programs\\\\nodejs\\\\node.exe\", \"$env:NVM_HOME\"\\) | ForEach-Object { if \\(Test-Path $_\\) { \"FOUND: $_\" } else { \"NOT FOUND: $_\" } })",
+      "PowerShell(winget --version)",
+      "PowerShell(Get-Command choco, scoop -ErrorAction SilentlyContinue)",
+      "PowerShell($env:Path = \"C:\\\\Program Files\\\\nodejs;\" + $env:Path; Set-Location \"C:\\\\Users\\\\dgrah\\\\Desktop\\\\Unlimited\\\\No Disintegrations\"; & \"C:\\\\Program Files\\\\nodejs\\\\npm.cmd\" install 2>&1)"
+    ]
+  }
+}

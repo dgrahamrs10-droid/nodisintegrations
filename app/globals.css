@@ -1,0 +1,65 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --orange: #ff6b35;
+  --amber: #f7931e;
+  --purple: #9b59b6;
+  --purple-dark: #7d3c98;
+  --green: #27ae60;
+  --green-dark: #1e8449;
+  --red: #e74c3c;
+  --red-dark: #c0392b;
+  --bg: #0a0a0a;
+  --card: #1a1a1a;
+  --card-alt: #141414;
+  --border: #333;
+  --border-dim: #222;
+  --text: #f0f0f0;
+  --text-dim: #888;
+  --font-heading: var(--font-orbitron), 'Courier New', monospace;
+  --font-body: var(--font-rajdhani), 'Arial Narrow', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+button:active {
+  transform: scale(0.93);
+}
+
+input {
+  font-family: var(--font-heading);
+  background: transparent;
+  border: none;
+  outline: none;
+  color: inherit;
+  text-align: center;
+}
+
+/* Prevent double-tap zoom on all interactive elements */
+a, button, input {
+  touch-action: manipulation;
+}
