@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   getTournament, getPlayers, getRounds, getPodsForRound,
   getAllPodPlayersForTournament, getStandings,
@@ -209,7 +210,14 @@ export default function TournamentPage() {
               {tournament.status === 'active' ? `ROUND ${tournament.current_round} OF ${tournament.total_rounds}` : tournament.status.toUpperCase()}
             </span>
           </div>
-          <div style={{ width: '60px' }} />
+          <Link href={`/display/${tournamentId}`} target="_blank" style={{
+            background: 'none', border: '1px solid #2a2a2a', borderRadius: '5px',
+            color: '#444', fontFamily: 'var(--font-heading)', fontSize: '8px',
+            letterSpacing: '2px', padding: '5px 8px', textDecoration: 'none',
+            display: 'flex', alignItems: 'center', gap: '4px',
+          }}>
+            ⛶ DISPLAY
+          </Link>
         </div>
 
         {/* Tabs */}
