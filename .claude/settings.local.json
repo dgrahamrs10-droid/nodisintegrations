@@ -4,7 +4,12 @@
       "PowerShell(@\\(\"C:\\\\Program Files\\\\nodejs\\\\node.exe\", \"C:\\\\Program Files \\(x86\\)\\\\nodejs\\\\node.exe\", \"$env:LOCALAPPDATA\\\\Programs\\\\nodejs\\\\node.exe\", \"$env:NVM_HOME\"\\) | ForEach-Object { if \\(Test-Path $_\\) { \"FOUND: $_\" } else { \"NOT FOUND: $_\" } })",
       "PowerShell(winget --version)",
       "PowerShell(Get-Command choco, scoop -ErrorAction SilentlyContinue)",
-      "PowerShell($env:Path = \"C:\\\\Program Files\\\\nodejs;\" + $env:Path; Set-Location \"C:\\\\Users\\\\dgrah\\\\Desktop\\\\Unlimited\\\\No Disintegrations\"; & \"C:\\\\Program Files\\\\nodejs\\\\npm.cmd\" install 2>&1)"
+      "PowerShell($env:Path = \"C:\\\\Program Files\\\\nodejs;\" + $env:Path; Set-Location \"C:\\\\Users\\\\dgrah\\\\Desktop\\\\Unlimited\\\\No Disintegrations\"; & \"C:\\\\Program Files\\\\nodejs\\\\npm.cmd\" install 2>&1)",
+      "Bash(\"C:\\\\Program Files\\\\nodejs\\\\node.exe\" node_modules\\\\npm\\\\bin\\\\npm-cli.js install @supabase/supabase-js)",
+      "Bash(\"C:\\\\Program Files\\\\nodejs\\\\node.exe\" \"C:\\\\Program Files\\\\nodejs\\\\node_modules\\\\npm\\\\bin\\\\npm-cli.js\" install @supabase/supabase-js)",
+      "mcp__60633384-86ca-45a1-ac62-eb03941405c8__list_teams",
+      "Bash(\"C:\\\\Program Files\\\\nodejs\\\\node.exe\" node_modules\\\\next\\\\dist\\\\bin\\\\next build)",
+      "Bash(\"C:\\\\Program Files\\\\nodejs\\\\node.exe\" \"node_modules\\\\next\\\\dist\\\\bin\\\\next\" build)"
     ]
   }
 }
