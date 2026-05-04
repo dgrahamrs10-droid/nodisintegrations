@@ -20,7 +20,7 @@ const inputStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   fontFamily: 'var(--font-heading)', fontSize: '10px',
-  color: '#555', letterSpacing: '3px',
+  color: '#777', letterSpacing: '3px',
 };
 
 export default function OrganizerPage() {
@@ -132,12 +132,12 @@ export default function OrganizerPage() {
                 flex: 1, padding: '10px 0', borderRadius: '6px', cursor: 'pointer',
                 background: form.total_rounds === n ? 'linear-gradient(135deg, #7a3800, #d35400)' : '#111',
                 border: `1px solid ${form.total_rounds === n ? '#ff6b35' : '#2a2a2a'}`,
-                color: form.total_rounds === n ? '#fff' : '#444',
+                color: form.total_rounds === n ? '#fff' : '#888',
                 fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: '900',
               }}>{n}</button>
             ))}
           </div>
-          <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#333', letterSpacing: '2px' }}>SUGGESTED 3 ROUNDS FOR 12 PLAYERS</span>
+          <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#555', letterSpacing: '2px' }}>SUGGESTED 3 ROUNDS FOR 12 PLAYERS</span>
         </div>
 
         {/* Points */}
@@ -146,7 +146,7 @@ export default function OrganizerPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             {([['1ST', 'points_1st'], ['2ND', 'points_2nd'], ['3RD', 'points_3rd'], ['4TH', 'points_4th']] as const).map(([label, key]) => (
               <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#111', border: '1px solid #1e1e1e', borderRadius: '6px', padding: '8px 12px' }}>
-                <span style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#444', letterSpacing: '2px' }}>{label}</span>
+                <span style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#777', letterSpacing: '2px' }}>{label}</span>
                 <input type="number" min={0} max={99} value={form[key]}
                   onChange={e => setForm(f => ({ ...f, [key]: parseInt(e.target.value) || 0 }))}
                   style={{ width: '48px', background: 'none', border: 'none', color: '#ff6b35', fontFamily: 'var(--font-heading)', fontSize: '22px', fontWeight: '900', textAlign: 'right' }}
@@ -178,7 +178,7 @@ export default function OrganizerPage() {
   return (
     <div style={{ height: '100dvh', background: '#0a0a0a', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #1a1a1a', flexShrink: 0 }}>
-        <Link href="/" style={{ color: '#444', textDecoration: 'none', fontSize: '10px', fontFamily: 'var(--font-heading)', letterSpacing: '2px' }}>← HOME</Link>
+        <Link href="/" style={{ color: '#666', textDecoration: 'none', fontSize: '10px', fontFamily: 'var(--font-heading)', letterSpacing: '2px' }}>← HOME</Link>
         <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: '#f7931e', letterSpacing: '3px' }}>ORGANIZER</span>
         <button onClick={() => setPhase('create')} style={{
           background: 'linear-gradient(135deg, #7a3800, #d35400)', border: '1px solid #ff6b35',
@@ -189,10 +189,10 @@ export default function OrganizerPage() {
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px' }}>
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '48px', fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#333', letterSpacing: '3px' }}>LOADING...</div>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '48px', fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#555', letterSpacing: '3px' }}>LOADING...</div>
         ) : tournaments.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60dvh', gap: '20px' }}>
-            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#2a2a2a', letterSpacing: '3px' }}>NO TOURNAMENTS YET</span>
+            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#555', letterSpacing: '3px' }}>NO TOURNAMENTS YET</span>
             <button onClick={() => setPhase('create')} style={{
               padding: '12px 28px', cursor: 'pointer',
               background: 'linear-gradient(135deg, #7a3800, #d35400)', border: '2px solid #ff6b35',
@@ -202,7 +202,7 @@ export default function OrganizerPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {tournaments.map(t => {
-              const statusColor = t.status === 'active' ? '#f7931e' : t.status === 'complete' ? '#58d68d' : '#444';
+              const statusColor = t.status === 'active' ? '#f7931e' : t.status === 'complete' ? '#58d68d' : '#666';
               const statusBg    = t.status === 'active' ? 'rgba(247,147,30,0.08)' : t.status === 'complete' ? 'rgba(88,214,141,0.08)' : 'transparent';
               return (
                 <button key={t.id} onClick={() => router.push(`/organizer/${t.id}`)} style={{
@@ -213,7 +213,7 @@ export default function OrganizerPage() {
                 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <span style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', color: '#e0e0e0', letterSpacing: '1px' }}>{t.name}</span>
-                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#333', letterSpacing: '2px' }}>
+                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#666', letterSpacing: '2px' }}>
                       {t.date} · {t.total_rounds} ROUNDS
                       {t.current_round > 0 ? ` · RD ${t.current_round}` : ''}
                     </span>

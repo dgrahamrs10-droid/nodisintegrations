@@ -7,7 +7,7 @@ import {
   getTournament, getPlayers, getRounds, getPodsForRound,
   getAllPodPlayersForTournament, getStandings,
   addPlayer, removePlayer, createRoundWithPods, completeRound,
-  updateTournament, generatePodGroups,
+  updateTournament, generatePodGroups, computePodSizes,
 } from '../../../lib/tournament';
 import type {
   Tournament, Player, Round, PodWithPlayers, PlayerStanding,
@@ -27,7 +27,7 @@ const COLORS = ['red', 'blue', 'yellow', 'green', 'grey'] as const;
 
 const sectionLabel: React.CSSProperties = {
   fontFamily: 'var(--font-heading)', fontSize: '9px',
-  color: '#444', letterSpacing: '3px',
+  color: '#666', letterSpacing: '3px',
 };
 
 const divider: React.CSSProperties = {
@@ -203,7 +203,7 @@ export default function TournamentPage() {
       {/* Header */}
       <div style={{ flexShrink: 0, borderBottom: '1px solid #1a1a1a' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px' }}>
-          <button onClick={() => router.push('/organizer')} style={{ background: 'none', border: 'none', color: '#444', fontFamily: 'var(--font-heading)', fontSize: '10px', letterSpacing: '2px', cursor: 'pointer', padding: '4px' }}>← BACK</button>
+          <button onClick={() => router.push('/organizer')} style={{ background: 'none', border: 'none', color: '#666', fontFamily: 'var(--font-heading)', fontSize: '10px', letterSpacing: '2px', cursor: 'pointer', padding: '4px' }}>← BACK</button>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
             <span style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', color: '#e0e0e0', letterSpacing: '2px' }}>{tournament.name.toUpperCase()}</span>
             <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: statusColor, letterSpacing: '3px' }}>
@@ -227,7 +227,7 @@ export default function TournamentPage() {
               flex: 1, padding: '9px 0', background: 'none', border: 'none',
               borderBottom: `2px solid ${activeTab === tab ? '#ff6b35' : 'transparent'}`,
               fontFamily: 'var(--font-heading)', fontSize: '9px', letterSpacing: '2px',
-              color: activeTab === tab ? '#ff6b35' : '#444', cursor: 'pointer',
+              color: activeTab === tab ? '#ff6b35' : '#666', cursor: 'pointer',
               textTransform: 'uppercase',
             }}>
               {tab === 'round' ? (activeRound ? `ROUND ${activeRound.round_number}` : 'ROUND') : tab}
@@ -303,17 +303,17 @@ export default function TournamentPage() {
 
             {/* Player list */}
             {players.length === 0 ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '32px', fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#2a2a2a', letterSpacing: '3px' }}>NO PLAYERS YET</div>
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '32px', fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#444', letterSpacing: '3px' }}>NO PLAYERS YET</div>
             ) : (
               players.map((p, i) => (
                 <div key={p.id} style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
                   padding: '10px 12px', background: '#0e0e0e', border: '1px solid #1a1a1a', borderRadius: '6px',
                 }}>
-                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#333', minWidth: '16px' }}>{i + 1}</span>
+                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#555', minWidth: '16px' }}>{i + 1}</span>
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: COLOR_HEX[p.color], flexShrink: 0 }} />
                   <span style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', color: COLOR_NAME[p.color], flex: 1, letterSpacing: '1px' }}>{p.name}</span>
-                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#333', letterSpacing: '1px' }}>{p.starting_hp} HP</span>
+                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#555', letterSpacing: '1px' }}>{p.starting_hp} HP</span>
                   {isSetup && (
                     <button onClick={() => handleRemovePlayer(p.id)} style={{ background: 'none', border: 'none', color: '#2a2a2a', fontSize: '16px', cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
                   )}
@@ -322,19 +322,26 @@ export default function TournamentPage() {
             )}
 
             {/* Start tournament */}
-            {isSetup && players.length >= 4 && players.length % 4 === 0 && (
+            {isSetup && players.length >= 3 && computePodSizes(players.length) !== null && (
               <div style={{ marginTop: '16px' }}>
                 <div style={divider} />
+                <div style={{ marginTop: '12px', padding: '8px 12px', background: 'rgba(255,107,53,0.05)', border: '1px solid #3a1a00', borderRadius: '6px' }}>
+                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#884422', letterSpacing: '2px' }}>
+                    PODS: {computePodSizes(players.length)!.map((s, i) => `${s}P`).join(' · ')}
+                  </span>
+                </div>
                 <button onClick={handlePreviewPods} disabled={busy} style={{
-                  width: '100%', marginTop: '16px', padding: '15px', cursor: 'pointer',
+                  width: '100%', marginTop: '10px', padding: '15px', cursor: 'pointer',
                   background: 'linear-gradient(135deg, #7a3800, #d35400)', border: '2px solid #ff6b35',
                   borderRadius: '10px', color: '#fff', fontFamily: 'var(--font-heading)', fontSize: '12px', letterSpacing: '4px',
                 }}>GENERATE ROUND 1</button>
               </div>
             )}
-            {isSetup && players.length > 0 && players.length % 4 !== 0 && (
-              <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(247,147,30,0.06)', border: '1px solid #7a3800', borderRadius: '6px' }}>
-                <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#7a5020', letterSpacing: '2px' }}>PLAYER COUNT MUST BE DIVISIBLE BY 4 TO GENERATE PODS</span>
+            {isSetup && players.length >= 3 && computePodSizes(players.length) === null && (
+              <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(192,57,43,0.08)', border: '1px solid #5a1a1a', borderRadius: '6px' }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#a04040', letterSpacing: '2px' }}>
+                  {players.length} PLAYERS CANNOT BE SPLIT INTO VALID PODS — ADD OR REMOVE A PLAYER
+                </span>
               </div>
             )}
           </div>
@@ -345,7 +352,7 @@ export default function TournamentPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {isSetup ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '32px 0' }}>
-                <span style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#333', letterSpacing: '3px' }}>NO ROUNDS STARTED</span>
+                <span style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#555', letterSpacing: '3px' }}>NO ROUNDS STARTED</span>
                 <button onClick={() => setActiveTab('players')} style={{ background: 'none', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#444', fontFamily: 'var(--font-heading)', fontSize: '10px', letterSpacing: '2px', padding: '8px 16px', cursor: 'pointer' }}>GO TO PLAYERS</button>
               </div>
             ) : (
@@ -365,7 +372,7 @@ export default function TournamentPage() {
                     borderRadius: '8px', padding: '12px 14px',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                      <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: '#888', letterSpacing: '3px' }}>TABLE {pod.table_number}</span>
+                      <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: '#aaa', letterSpacing: '3px' }}>TABLE {pod.table_number}</span>
                       <span style={{
                         fontFamily: 'var(--font-heading)', fontSize: '9px', letterSpacing: '2px',
                         color: pod.status === 'submitted' ? '#58d68d' : '#555',
@@ -415,12 +422,12 @@ export default function TournamentPage() {
             {/* Header row */}
             <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 48px 48px', gap: '4px', padding: '6px 10px', marginBottom: '4px' }}>
               {['#', 'PLAYER', 'PTS', 'GP'].map(h => (
-                <span key={h} style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#333', letterSpacing: '2px' }}>{h}</span>
+                <span key={h} style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#555', letterSpacing: '2px' }}>{h}</span>
               ))}
             </div>
             <div style={divider} />
             {standings.length === 0 ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '32px', fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#2a2a2a', letterSpacing: '3px' }}>NO RESULTS YET</div>
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '32px', fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#444', letterSpacing: '3px' }}>NO RESULTS YET</div>
             ) : (
               standings.map((s, i) => (
                 <div key={s.player.id} style={{
@@ -435,7 +442,7 @@ export default function TournamentPage() {
                     <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: COLOR_NAME[s.player.color], letterSpacing: '1px' }}>{s.player.name}</span>
                   </div>
                   <span style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', fontWeight: '900', color: '#ff6b35', textAlign: 'center' }}>{s.total_points}</span>
-                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: '#444', textAlign: 'center' }}>{s.games_played}</span>
+                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: '#666', textAlign: 'center' }}>{s.games_played}</span>
                 </div>
               ))
             )}

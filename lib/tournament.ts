@@ -206,9 +206,29 @@ export async function getStandings(
     );
 }
 
+// ── Pod size calculator ───────────────────────────────────────────────────────
+// Fills pods of 4 first; uses pods of 3 only when required.
+// Returns null for counts that can't be distributed (e.g. 5).
+//
+// Valid counts and their pod layouts:
+//   n % 4 === 0  →  all 4s
+//   n % 4 === 3  →  (n-3)/4 × 4s + one 3
+//   n % 4 === 2  →  (n-6)/4 × 4s + two 3s   (needs n ≥ 6)
+//   n % 4 === 1  →  (n-9)/4 × 4s + three 3s (needs n ≥ 9)
+
+export function computePodSizes(n: number): number[] | null {
+  if (n < 3) return null;
+  const r = n % 4;
+  if (r === 0) return Array(n / 4).fill(4);
+  if (r === 3) return [...Array((n - 3) / 4).fill(4), 3];
+  if (r === 2) { if (n < 6) return null; return [...Array((n - 6) / 4).fill(4), 3, 3]; }
+  // r === 1
+  if (n < 9) return null;
+  return [...Array((n - 9) / 4).fill(4), 3, 3, 3];
+}
+
 // ── Pairing Algorithm ─────────────────────────────────────────────────────────
 // Round-robin with parity: maximise opponent variety, secondary priority = similar points.
-// For 12 players in pods of 4, rounds 1-3 can achieve zero repeat opponents.
 
 export function generatePodGroups(
   players: Player[],
@@ -216,6 +236,9 @@ export function generatePodGroups(
   standings: PlayerStanding[],
   roundNumber: number,
 ): Player[][] {
+  const podSizes = computePodSizes(players.length);
+  if (!podSizes) return [];
+
   // Build conflict map: who has already played together
   const conflicts: Record<string, Set<string>> = {};
   players.forEach(p => { conflicts[p.id] = new Set(); });
@@ -245,8 +268,9 @@ export function generatePodGroups(
   const used = new Set<string>();
   const pods: Player[][] = [];
 
-  while (sorted.filter(p => !used.has(p.id)).length >= 4) {
-    const seed = sorted.find(p => !used.has(p.id))!;
+  for (const targetSize of podSizes) {
+    const seed = sorted.find(p => !used.has(p.id));
+    if (!seed) break;
     used.add(seed.id);
     const pod: Player[] = [seed];
 
@@ -260,7 +284,7 @@ export function generatePodGroups(
       .sort((a, b) => a.score - b.score);
 
     for (const { player } of candidates) {
-      if (pod.length >= 4) break;
+      if (pod.length >= targetSize) break;
       pod.push(player);
       used.add(player.id);
     }
