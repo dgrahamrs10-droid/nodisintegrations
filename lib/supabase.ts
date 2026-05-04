@@ -13,17 +13,20 @@ export type PodStatus        = 'pending' | 'submitted';
 export type PlayerColor      = 'red' | 'blue' | 'yellow' | 'green' | 'grey';
 
 export interface Tournament {
-  id:            string;
-  name:          string;
-  date:          string;
-  status:        TournamentStatus;
-  current_round: number;
-  total_rounds:  number;
-  points_1st:    number;
-  points_2nd:    number;
-  points_3rd:    number;
-  points_4th:    number;
-  created_at:    string;
+  id:              string;
+  name:            string;
+  date:            string;
+  status:          TournamentStatus;
+  current_round:   number;
+  total_rounds:    number;
+  points_1st:      number;
+  points_2nd:      number;
+  points_3rd:      number;
+  points_4th:      number;
+  points_3p_1st:   number;
+  points_3p_2nd:   number;
+  points_3p_3rd:   number;
+  created_at:      string;
 }
 
 export interface Player {
@@ -32,6 +35,7 @@ export interface Player {
   name:          string;
   color:         PlayerColor;
   starting_hp:   number;
+  deck:          string;
   created_at:    string;
 }
 

@@ -37,6 +37,11 @@ export async function updateTournament(
   if (error) throw error;
 }
 
+export async function deleteTournament(id: string): Promise<void> {
+  const { error } = await supabase.from('tournaments').delete().eq('id', id);
+  if (error) throw error;
+}
+
 // ── Players ───────────────────────────────────────────────────────────────────
 
 export async function getPlayers(tournamentId: string): Promise<Player[]> {

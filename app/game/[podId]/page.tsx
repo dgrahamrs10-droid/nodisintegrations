@@ -207,7 +207,12 @@ function RotatedCell({ rotation, cellWVar, cellHVar, gridRow, gridColumn, childr
 // ── Placement calculation ─────────────────────────────────────────────────────
 
 function calcPlacements(players: GamePlayer[], tournament: Tournament): Placement[] {
-  const pts = [tournament.points_1st, tournament.points_2nd, tournament.points_3rd, tournament.points_4th];
+  const is3P = players.length === 3;
+  const pts = is3P
+    ? [tournament.points_3p_1st ?? tournament.points_1st,
+       tournament.points_3p_2nd ?? tournament.points_2nd,
+       tournament.points_3p_3rd ?? tournament.points_3rd]
+    : [tournament.points_1st, tournament.points_2nd, tournament.points_3rd, tournament.points_4th];
 
   // Survivors sorted: HP desc, then initiative holder first
   const survivors = [...players.filter(p => !p.eliminated)]

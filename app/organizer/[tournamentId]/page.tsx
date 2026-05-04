@@ -7,7 +7,7 @@ import {
   getTournament, getPlayers, getRounds, getPodsForRound,
   getAllPodPlayersForTournament, getStandings,
   addPlayer, removePlayer, createRoundWithPods, completeRound,
-  updateTournament, generatePodGroups, computePodSizes,
+  updateTournament, deleteTournament, generatePodGroups, computePodSizes,
 } from '../../../lib/tournament';
 import type {
   Tournament, Player, Round, PodWithPlayers, PlayerStanding,
@@ -55,6 +55,7 @@ export default function TournamentPage() {
   // Add-player form
   const [showAdd,   setShowAdd]   = useState(false);
   const [newName,   setNewName]   = useState('');
+  const [newDeck,   setNewDeck]   = useState('');
   const [newColor,  setNewColor]  = useState<typeof COLORS[number]>('red');
   const [newHP,     setNewHP]     = useState(30);
 
@@ -102,14 +103,27 @@ export default function TournamentPage() {
       const p = await addPlayer({
         tournament_id: tournamentId,
         name: newName.trim(),
+        deck: newDeck.trim(),
         color: newColor,
         starting_hp: newHP,
       });
       setPlayers(prev => [...prev, p]);
       setNewName('');
+      setNewDeck('');
       setNewColor('red');
       setNewHP(30);
       setShowAdd(false);
+    } catch (e: any) { setError(e.message); }
+    finally { setBusy(false); }
+  };
+
+  const handleDeleteTournament = async () => {
+    if (!tournament) return;
+    if (!confirm(`Delete "${tournament.name}"? This cannot be undone and will remove all rounds, results, and players.`)) return;
+    setBusy(true);
+    try {
+      await deleteTournament(tournamentId);
+      router.push('/organizer');
     } catch (e: any) { setError(e.message); }
     finally { setBusy(false); }
   };
@@ -210,14 +224,23 @@ export default function TournamentPage() {
               {tournament.status === 'active' ? `ROUND ${tournament.current_round} OF ${tournament.total_rounds}` : tournament.status.toUpperCase()}
             </span>
           </div>
-          <Link href={`/display/${tournamentId}`} target="_blank" style={{
-            background: 'none', border: '1px solid #2a2a2a', borderRadius: '5px',
-            color: '#444', fontFamily: 'var(--font-heading)', fontSize: '8px',
-            letterSpacing: '2px', padding: '5px 8px', textDecoration: 'none',
-            display: 'flex', alignItems: 'center', gap: '4px',
-          }}>
-            ⛶ DISPLAY
-          </Link>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <Link href={`/display/${tournamentId}`} target="_blank" style={{
+              background: 'none', border: '1px solid #2a2a2a', borderRadius: '5px',
+              color: '#555', fontFamily: 'var(--font-heading)', fontSize: '8px',
+              letterSpacing: '2px', padding: '5px 8px', textDecoration: 'none',
+              display: 'flex', alignItems: 'center',
+            }}>
+              ⛶ DISPLAY
+            </Link>
+            <button onClick={handleDeleteTournament} disabled={busy} style={{
+              background: 'none', border: '1px solid #3a1010', borderRadius: '5px',
+              color: '#6b2a2a', fontFamily: 'var(--font-heading)', fontSize: '8px',
+              letterSpacing: '2px', padding: '5px 8px', cursor: 'pointer',
+            }}>
+              ✕ DELETE
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -270,6 +293,10 @@ export default function TournamentPage() {
                   placeholder="Player name" maxLength={20}
                   style={{ background: '#111', border: '1px solid #2a2a2a', borderRadius: '5px', padding: '9px 12px', color: '#f0f0f0', fontFamily: 'var(--font-heading)', fontSize: '13px', letterSpacing: '1px', width: '100%', boxSizing: 'border-box' }}
                 />
+                <input value={newDeck} onChange={e => setNewDeck(e.target.value)}
+                  placeholder="Deck / faction (optional)" maxLength={40}
+                  style={{ background: '#111', border: '1px solid #2a2a2a', borderRadius: '5px', padding: '9px 12px', color: '#aaa', fontFamily: 'var(--font-heading)', fontSize: '11px', letterSpacing: '1px', width: '100%', boxSizing: 'border-box' }}
+                />
                 {/* Color */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <span style={sectionLabel}>COLOR</span>
@@ -312,7 +339,10 @@ export default function TournamentPage() {
                 }}>
                   <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#555', minWidth: '16px' }}>{i + 1}</span>
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: COLOR_HEX[p.color], flexShrink: 0 }} />
-                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', color: COLOR_NAME[p.color], flex: 1, letterSpacing: '1px' }}>{p.name}</span>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', color: COLOR_NAME[p.color], letterSpacing: '1px' }}>{p.name}</span>
+                    {p.deck && <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#555', letterSpacing: '1px' }}>{p.deck}</span>}
+                  </div>
                   <span style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#555', letterSpacing: '1px' }}>{p.starting_hp} HP</span>
                   {isSetup && (
                     <button onClick={() => handleRemovePlayer(p.id)} style={{ background: 'none', border: 'none', color: '#2a2a2a', fontSize: '16px', cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
@@ -420,31 +450,40 @@ export default function TournamentPage() {
         {activeTab === 'standings' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {/* Header row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 48px 48px', gap: '4px', padding: '6px 10px', marginBottom: '4px' }}>
-              {['#', 'PLAYER', 'PTS', 'GP'].map(h => (
-                <span key={h} style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#555', letterSpacing: '2px' }}>{h}</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '24px 1fr 40px 28px 28px 28px 28px', gap: '4px', padding: '6px 10px', marginBottom: '4px' }}>
+              {['#', 'PLAYER', 'PTS', '1', '2', '3', '4'].map(h => (
+                <span key={h} style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#555', letterSpacing: '1px', textAlign: h === '#' || h === 'PLAYER' ? 'left' : 'center' }}>{h}</span>
               ))}
             </div>
             <div style={divider} />
             {standings.length === 0 ? (
               <div style={{ display: 'flex', justifyContent: 'center', padding: '32px', fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#444', letterSpacing: '3px' }}>NO RESULTS YET</div>
             ) : (
-              standings.map((s, i) => (
-                <div key={s.player.id} style={{
-                  display: 'grid', gridTemplateColumns: '28px 1fr 48px 48px', gap: '4px',
-                  padding: '9px 10px', borderRadius: '5px',
-                  background: i === 0 ? 'rgba(212,175,55,0.06)' : 'transparent',
-                  borderBottom: '1px solid #111',
-                }}>
-                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: i === 0 ? '#d4af37' : '#333', fontWeight: i === 0 ? '900' : '400' }}>{i + 1}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: COLOR_HEX[s.player.color], flexShrink: 0 }} />
-                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: COLOR_NAME[s.player.color], letterSpacing: '1px' }}>{s.player.name}</span>
+              standings.map((s, i) => {
+                const rec = [1,2,3,4].map(pl => s.results.filter(r => r.placement === pl).length);
+                const recColors = ['#d4af37','#8e9aad','#b87333','#444'];
+                return (
+                  <div key={s.player.id} style={{
+                    display: 'grid', gridTemplateColumns: '24px 1fr 40px 28px 28px 28px 28px', gap: '4px',
+                    padding: '8px 10px', borderRadius: '5px',
+                    background: i === 0 ? 'rgba(212,175,55,0.06)' : 'transparent',
+                    borderBottom: '1px solid #111',
+                  }}>
+                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: i === 0 ? '#d4af37' : '#444', fontWeight: i === 0 ? '900' : '400' }}>{i + 1}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', overflow: 'hidden' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: COLOR_HEX[s.player.color], flexShrink: 0 }} />
+                        <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: COLOR_NAME[s.player.color], letterSpacing: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.player.name}</span>
+                      </div>
+                      {s.player.deck && <span style={{ fontFamily: 'var(--font-heading)', fontSize: '8px', color: '#444', letterSpacing: '1px', paddingLeft: '13px' }}>{s.player.deck}</span>}
+                    </div>
+                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', fontWeight: '900', color: '#ff6b35', textAlign: 'center' }}>{s.total_points}</span>
+                    {rec.map((count, pi) => (
+                      <span key={pi} style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: count > 0 ? recColors[pi] : '#2a2a2a', textAlign: 'center', fontWeight: count > 0 ? '700' : '400' }}>{count}</span>
+                    ))}
                   </div>
-                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', fontWeight: '900', color: '#ff6b35', textAlign: 'center' }}>{s.total_points}</span>
-                  <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: '#666', textAlign: 'center' }}>{s.games_played}</span>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}

@@ -35,6 +35,7 @@ export default function OrganizerPage() {
     name: '', date: new Date().toISOString().split('T')[0],
     total_rounds: 3,
     points_1st: 3, points_2nd: 2, points_3rd: 1, points_4th: 0,
+    points_3p_1st: 3, points_3p_2nd: 2, points_3p_3rd: 1,
   });
 
   const handlePin = () => {
@@ -140,9 +141,9 @@ export default function OrganizerPage() {
           <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#555', letterSpacing: '2px' }}>SUGGESTED 3 ROUNDS FOR 12 PLAYERS</span>
         </div>
 
-        {/* Points */}
+        {/* 4-player pod points */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span style={labelStyle}>POINTS PER PLACEMENT</span>
+          <span style={labelStyle}>4-PLAYER POD POINTS</span>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             {([['1ST', 'points_1st'], ['2ND', 'points_2nd'], ['3RD', 'points_3rd'], ['4TH', 'points_4th']] as const).map(([label, key]) => (
               <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#111', border: '1px solid #1e1e1e', borderRadius: '6px', padding: '8px 12px' }}>
@@ -150,6 +151,22 @@ export default function OrganizerPage() {
                 <input type="number" min={0} max={99} value={form[key]}
                   onChange={e => setForm(f => ({ ...f, [key]: parseInt(e.target.value) || 0 }))}
                   style={{ width: '48px', background: 'none', border: 'none', color: '#ff6b35', fontFamily: 'var(--font-heading)', fontSize: '22px', fontWeight: '900', textAlign: 'right' }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 3-player pod points */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <span style={labelStyle}>3-PLAYER POD POINTS</span>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+            {([['1ST', 'points_3p_1st'], ['2ND', 'points_3p_2nd'], ['3RD', 'points_3p_3rd']] as const).map(([label, key]) => (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#111', border: '1px solid #1e1e1e', borderRadius: '6px', padding: '8px 12px' }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#777', letterSpacing: '2px' }}>{label}</span>
+                <input type="number" min={0} max={99} value={form[key]}
+                  onChange={e => setForm(f => ({ ...f, [key]: parseInt(e.target.value) || 0 }))}
+                  style={{ width: '40px', background: 'none', border: 'none', color: '#ff6b35', fontFamily: 'var(--font-heading)', fontSize: '22px', fontWeight: '900', textAlign: 'right' }}
                 />
               </div>
             ))}
