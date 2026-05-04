@@ -30,6 +30,7 @@ export default function OrganizerPage() {
   const [pinError, setPinError]     = useState(false);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading]       = useState(false);
+  const [createError, setCreateError] = useState('');
   const [form, setForm]             = useState({
     name: '', date: new Date().toISOString().split('T')[0],
     total_rounds: 3,
@@ -56,9 +57,12 @@ export default function OrganizerPage() {
   const handleCreate = async () => {
     if (!form.name.trim()) return;
     setLoading(true);
+    setCreateError('');
     try {
       const t = await createTournament(form);
       router.push(`/organizer/${t.id}`);
+    } catch (e: any) {
+      setCreateError(e.message ?? 'Failed to create tournament');
     } finally { setLoading(false); }
   };
 
@@ -153,7 +157,12 @@ export default function OrganizerPage() {
         </div>
       </div>
 
-      <div style={{ padding: '12px 16px', borderTop: '1px solid #1a1a1a', flexShrink: 0 }}>
+      <div style={{ padding: '12px 16px', borderTop: '1px solid #1a1a1a', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {createError && (
+          <div style={{ padding: '10px 12px', background: 'rgba(192,57,43,0.15)', border: '1px solid #c0392b', borderRadius: '6px' }}>
+            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', color: '#ec7063', letterSpacing: '1px' }}>{createError}</span>
+          </div>
+        )}
         <button onClick={handleCreate} disabled={!form.name.trim() || loading} style={{
           width: '100%', padding: '15px', cursor: form.name.trim() ? 'pointer' : 'default',
           background: form.name.trim() ? 'linear-gradient(135deg, #7a3800, #d35400)' : '#151515',
