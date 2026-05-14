@@ -125,14 +125,14 @@ export default function HomePage() {
               borderRadius: '12px',
               color: '#c39bd3',
               fontFamily: 'var(--font-heading)',
-              fontSize: '18px',
-              letterSpacing: '3px',
+              fontSize: '15px',
+              letterSpacing: '2px',
               fontWeight: '700',
               boxShadow: '0 0 20px rgba(125,60,152,0.2), inset 0 0 20px rgba(125,60,152,0.05)',
               cursor: 'pointer',
             }}
           >
-            ⬡ Draft
+            ⬡ Twin Suns Randomizer
           </button>
         </Link>
       </div>
