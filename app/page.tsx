@@ -114,6 +114,27 @@ export default function HomePage() {
             ☀ Twin Suns
           </button>
         </Link>
+
+        <Link href="/randomizer" style={{ textDecoration: 'none' }}>
+          <button
+            style={{
+              width: '100%',
+              padding: '20px',
+              background: 'linear-gradient(135deg, #1a1a1a, #222)',
+              border: '2px solid #7d3c98',
+              borderRadius: '12px',
+              color: '#c39bd3',
+              fontFamily: 'var(--font-heading)',
+              fontSize: '18px',
+              letterSpacing: '3px',
+              fontWeight: '700',
+              boxShadow: '0 0 20px rgba(125,60,152,0.2), inset 0 0 20px rgba(125,60,152,0.05)',
+              cursor: 'pointer',
+            }}
+          >
+            ⬡ Draft
+          </button>
+        </Link>
       </div>
 
       {/* Footer */}
