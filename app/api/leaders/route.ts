@@ -9,7 +9,7 @@ async function fetchAllLeaders(): Promise<any[]> {
   const limit = 200;
 
   do {
-    const url = cursor
+    const url: string = cursor
       ? `${SWUAPI}/cards?type=Leader&limit=${limit}&after=${cursor}`
       : `${SWUAPI}/cards?type=Leader&limit=${limit}`;
 
