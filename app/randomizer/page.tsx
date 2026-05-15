@@ -17,6 +17,7 @@ interface Leader {
   Name: string;
   Subtitle: string;
   Aspects: Aspect[];
+  Traits: string[];
   Rarity: Rarity;
   FrontArt: string;
   BackArt: string;
@@ -145,6 +146,7 @@ async function fetchLeaders(): Promise<Leader[]> {
         Name: c.Name as string,
         Subtitle: (c.Subtitle ?? '') as string,
         Aspects: (c.Aspects ?? []) as Aspect[],
+        Traits: (c.Traits ?? []) as string[],
         Rarity: c.Rarity as Rarity,
         FrontArt: c.FrontArt as string,
         BackArt: (c.BackArt ?? '') as string,
@@ -447,6 +449,20 @@ function AspectPip({ aspect }: { aspect: Aspect }) {
   );
 }
 
+function TraitPip({ trait }: { trait: string }) {
+  return (
+    <span style={{
+      fontSize: '8px', fontFamily: 'var(--font-heading)', letterSpacing: '1.5px',
+      padding: '2px 6px', borderRadius: '3px',
+      border: '1px solid #2d2d1e',
+      color: '#666',
+      background: '#141410',
+    }}>
+      {trait.toUpperCase()}
+    </span>
+  );
+}
+
 function RarityPip({ rarity }: { rarity: Rarity }) {
   const c: Record<Rarity, { color: string; border: string }> = {
     Common:  { color: '#666',    border: '#333' },
@@ -465,12 +481,12 @@ function RarityPip({ rarity }: { rarity: Rarity }) {
 }
 
 function LeaderCard({ leader, onReroll }: { leader: Leader; onReroll?: () => void }) {
-  const [useFront, setUseFront] = useState(false);
+  const [showBack, setShowBack] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
   const primary = primaryAspect(leader);
   const hex = ASPECT_HEX[primary];
-  const artSrc = useFront || !leader.BackArt || leader.isFlip ? leader.FrontArt : leader.BackArt;
-  const objectPos = useFront || leader.isFlip ? '0% 20%' : 'center 15%';
+  const hasBack = !!leader.BackArt;
+  const artSrc = showBack && hasBack ? leader.BackArt : leader.FrontArt;
 
   return (
     <div
@@ -481,63 +497,59 @@ function LeaderCard({ leader, onReroll }: { leader: Leader; onReroll?: () => voi
         boxShadow: `0 2px 20px ${hex}18`,
       }}
     >
-      {/* Art */}
-      <div className="relative overflow-hidden bg-[#050505]" style={{ height: '200px' }}>
+      {/* Full card image */}
+      <div style={{ position: 'relative' }}>
         {!imgFailed ? (
           <img
             src={artSrc}
             alt={leader.Name}
-            onError={() => {
-              if (!useFront) { setUseFront(true); }
-              else { setImgFailed(true); }
-            }}
-            className="w-full h-full object-cover"
-            style={{ objectPosition: objectPos, display: 'block' }}
+            onError={() => setImgFailed(true)}
+            style={{ width: '100%', height: 'auto', display: 'block' }}
           />
         ) : (
           <div style={{
-            width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: `${hex}12`,
+            width: '100%', paddingTop: '140%', position: 'relative', background: `${hex}12`,
           }}>
-            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#444', letterSpacing: '2px' }}>NO IMAGE</span>
+            <span style={{
+              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+              fontFamily: 'var(--font-heading)', fontSize: '9px', color: '#444', letterSpacing: '2px',
+            }}>NO IMAGE</span>
           </div>
         )}
 
-        {/* Bottom gradient for legibility */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-          style={{ background: 'linear-gradient(to top, rgba(13,13,13,0.9) 0%, transparent 100%)' }}
-        />
-
-        {/* Set badge */}
+        {/* Set badge — top left */}
         <div style={{
           position: 'absolute', top: '8px', left: '10px',
-          background: 'rgba(0,0,0,0.6)', borderRadius: '3px', padding: '2px 6px',
-          fontSize: '7px', fontFamily: 'var(--font-heading)', color: '#666', letterSpacing: '1px',
+          background: 'rgba(0,0,0,0.65)', borderRadius: '3px', padding: '2px 6px',
+          fontSize: '7px', fontFamily: 'var(--font-heading)', color: '#aaa', letterSpacing: '1px',
         }}>
           {leader.Set}
         </div>
 
-        {/* Flip badge */}
-        {leader.isFlip && (
-          <div style={{
-            position: 'absolute', top: '8px', right: '10px',
-            background: 'rgba(125,60,152,0.75)', borderRadius: '3px', padding: '2px 7px',
-            fontSize: '7px', fontFamily: 'var(--font-heading)', color: '#c39bd3', letterSpacing: '1px',
-          }}>
-            FLIP
-          </div>
+        {/* Front / Back toggle — top right */}
+        {hasBack && (
+          <button
+            onClick={() => setShowBack(v => !v)}
+            style={{
+              position: 'absolute', top: '8px', right: '10px',
+              background: 'rgba(0,0,0,0.65)', border: `1px solid ${hex}66`,
+              borderRadius: '3px', padding: '2px 8px', cursor: 'pointer',
+              fontSize: '7px', fontFamily: 'var(--font-heading)', color: '#aaa', letterSpacing: '1px',
+            }}
+          >
+            {showBack ? 'FRONT' : 'BACK'}
+          </button>
         )}
 
-        {/* Reroll */}
+        {/* Reroll — bottom right */}
         {onReroll && (
           <button
             onClick={onReroll}
-            className="absolute bottom-2 right-2.5 cursor-pointer"
             style={{
+              position: 'absolute', bottom: '10px', right: '10px',
               background: 'rgba(0,0,0,0.7)', border: `1px solid ${hex}66`, borderRadius: '5px',
               color: '#aaa', fontFamily: 'var(--font-heading)', fontSize: '8px',
-              letterSpacing: '1.5px', padding: '4px 9px',
+              letterSpacing: '1.5px', padding: '4px 9px', cursor: 'pointer',
               backdropFilter: 'blur(4px)',
             }}
           >
@@ -546,13 +558,10 @@ function LeaderCard({ leader, onReroll }: { leader: Leader; onReroll?: () => voi
         )}
       </div>
 
-      {/* Info */}
+      {/* Structured info */}
       <div
         className="flex flex-col gap-1"
-        style={{
-          padding: '10px 12px 11px',
-          borderTop: `1px solid ${hex}30`,
-        }}
+        style={{ padding: '10px 12px 12px', borderTop: `1px solid ${hex}30` }}
       >
         <div style={{
           fontFamily: 'var(--font-heading)', fontSize: '13px', fontWeight: '700',
@@ -565,6 +574,15 @@ function LeaderCard({ leader, onReroll }: { leader: Leader; onReroll?: () => voi
             {leader.Subtitle}
           </div>
         )}
+
+        {/* Traits */}
+        {leader.Traits.length > 0 && (
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
+            {leader.Traits.map((t, i) => <TraitPip key={i} trait={t} />)}
+          </div>
+        )}
+
+        {/* Aspects + set code + rarity */}
         <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center', marginTop: '3px' }}>
           {leader.Aspects.map((a, i) => <AspectPip key={i} aspect={a} />)}
           <div style={{ flex: 1 }} />

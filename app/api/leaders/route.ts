@@ -69,8 +69,9 @@ export async function GET() {
           Number: (c.card_number ?? '') as string,
           Name: (c.name ?? '') as string,
           Subtitle: (c.subtitle ?? '') as string,
-          // Aspects from swuapi — correct alignment data
+          // Aspects + Traits from swuapi — correct alignment data
           Aspects: Array.isArray(c.aspects) ? c.aspects : [],
+          Traits: Array.isArray(c.traits) ? c.traits : [],
           Rarity: (c.rarity ?? 'Common') as string,
           // Images from swuapi
           FrontArt: (c.front_image_url ?? '') as string,
