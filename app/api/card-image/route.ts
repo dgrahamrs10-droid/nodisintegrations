@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const ALLOWED_HOSTS = new Set(['cdn.swu-db.com', 'cdn.starwarsunlimited.com']);
+
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get('url');
-  if (!url || !url.startsWith('https://cdn.swu-db.com/')) {
-    return NextResponse.json({ error: 'invalid url' }, { status: 400 });
+  if (!url) return NextResponse.json({ error: 'missing url' }, { status: 400 });
+
+  let hostname: string;
+  try { hostname = new URL(url).hostname; }
+  catch { return NextResponse.json({ error: 'invalid url' }, { status: 400 }); }
+
+  if (!ALLOWED_HOSTS.has(hostname)) {
+    return NextResponse.json({ error: 'disallowed host' }, { status: 400 });
   }
 
   const res = await fetch(url, { next: { revalidate: 86400 } });
