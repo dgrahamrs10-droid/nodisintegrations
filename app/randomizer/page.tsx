@@ -473,15 +473,16 @@ function LeaderCard({ leader, onReroll }: { leader: Leader; onReroll?: () => voi
   const objectPos = useFront || leader.isFlip ? '0% 20%' : 'center 15%';
 
   return (
-    <div style={{
-      background: '#0d0d0d',
-      border: `1px solid ${hex}55`,
-      borderRadius: '10px',
-      overflow: 'hidden',
-      boxShadow: `0 2px 20px ${hex}18`,
-    }}>
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{
+        background: '#0d0d0d',
+        border: `1px solid ${hex}55`,
+        boxShadow: `0 2px 20px ${hex}18`,
+      }}
+    >
       {/* Art */}
-      <div style={{ position: 'relative', height: '200px', overflow: 'hidden', background: '#050505' }}>
+      <div className="relative overflow-hidden bg-[#050505]" style={{ height: '200px' }}>
         {!imgFailed ? (
           <img
             src={artSrc}
@@ -490,12 +491,8 @@ function LeaderCard({ leader, onReroll }: { leader: Leader; onReroll?: () => voi
               if (!useFront) { setUseFront(true); }
               else { setImgFailed(true); }
             }}
-            style={{
-              width: '100%', height: '100%',
-              objectFit: 'cover',
-              objectPosition: objectPos,
-              display: 'block',
-            }}
+            className="w-full h-full object-cover"
+            style={{ objectPosition: objectPos, display: 'block' }}
           />
         ) : (
           <div style={{
@@ -507,11 +504,10 @@ function LeaderCard({ leader, onReroll }: { leader: Leader; onReroll?: () => voi
         )}
 
         {/* Bottom gradient for legibility */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px',
-          background: 'linear-gradient(to top, rgba(13,13,13,0.9) 0%, transparent 100%)',
-          pointerEvents: 'none',
-        }} />
+        <div
+          className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+          style={{ background: 'linear-gradient(to top, rgba(13,13,13,0.9) 0%, transparent 100%)' }}
+        />
 
         {/* Set badge */}
         <div style={{
@@ -537,11 +533,11 @@ function LeaderCard({ leader, onReroll }: { leader: Leader; onReroll?: () => voi
         {onReroll && (
           <button
             onClick={onReroll}
+            className="absolute bottom-2 right-2.5 cursor-pointer"
             style={{
-              position: 'absolute', bottom: '8px', right: '10px',
               background: 'rgba(0,0,0,0.7)', border: `1px solid ${hex}66`, borderRadius: '5px',
               color: '#aaa', fontFamily: 'var(--font-heading)', fontSize: '8px',
-              letterSpacing: '1.5px', padding: '4px 9px', cursor: 'pointer',
+              letterSpacing: '1.5px', padding: '4px 9px',
               backdropFilter: 'blur(4px)',
             }}
           >
@@ -551,11 +547,13 @@ function LeaderCard({ leader, onReroll }: { leader: Leader; onReroll?: () => voi
       </div>
 
       {/* Info */}
-      <div style={{
-        padding: '10px 12px 11px',
-        borderTop: `1px solid ${hex}30`,
-        display: 'flex', flexDirection: 'column', gap: '3px',
-      }}>
+      <div
+        className="flex flex-col gap-1"
+        style={{
+          padding: '10px 12px 11px',
+          borderTop: `1px solid ${hex}30`,
+        }}
+      >
         <div style={{
           fontFamily: 'var(--font-heading)', fontSize: '13px', fontWeight: '700',
           color: '#eee', letterSpacing: '0.3px', lineHeight: 1.25,
@@ -611,22 +609,21 @@ function LeaderCard({ leader, onReroll }: { leader: Leader; onReroll?: () => voi
 function BaseCard({ base, onReroll }: { base: BaseType; onReroll?: () => void }) {
   const bm = BASE_META[base];
   return (
-    <div style={{
-      background: '#0d0d0d',
-      border: `1px solid ${bm.hex}44`,
-      borderRadius: '10px',
-      overflow: 'hidden',
-      boxShadow: `0 2px 16px ${bm.hex}14`,
-      display: 'flex',
-    }}>
+    <div
+      className="rounded-xl overflow-hidden flex"
+      style={{
+        background: '#0d0d0d',
+        border: `1px solid ${bm.hex}44`,
+        boxShadow: `0 2px 16px ${bm.hex}14`,
+      }}
+    >
       {/* Left accent bar */}
       <div style={{ width: '4px', background: bm.hex, flexShrink: 0 }} />
 
       {/* Content */}
-      <div style={{
-        flex: 1, padding: '16px 16px 14px',
-        display: 'flex', flexDirection: 'column', gap: '4px',
-      }}>
+      <div
+        className="flex-1 flex flex-col gap-1 p-4"
+      >
         <div style={{ fontFamily: 'var(--font-heading)', fontSize: '8px', color: '#444', letterSpacing: '3px' }}>BASE</div>
         <div style={{
           fontFamily: 'var(--font-heading)', fontSize: '22px', fontWeight: '900',
@@ -734,9 +731,11 @@ function PlayerRow({ entry, index }: { entry: TournamentEntry; index: number }) 
       </div>
 
       {/* Leader cards */}
-      <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <LeaderCard leader={combo.leader1} />
-        <LeaderCard leader={combo.leader2} />
+      <div className="p-3 flex flex-col gap-2.5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <LeaderCard leader={combo.leader1} />
+          <LeaderCard leader={combo.leader2} />
+        </div>
         <BaseCard base={combo.base} />
       </div>
     </div>
@@ -916,9 +915,11 @@ export default function RandomizerPage() {
         </div>
       </div>
 
-      {/* ── Body ── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        <div style={{ maxWidth: '440px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      {/* ── Responsive body ── */}
+      <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
+
+        {/* LEFT: Controls panel */}
+        <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 lg:overflow-y-auto lg:border-r border-[#1a1a1a] p-4 flex flex-col gap-3">
 
           {loadError && (
             <div style={{ padding: '12px 14px', background: 'rgba(192,57,43,0.1)', border: '1px solid #c0392b', borderRadius: '8px', fontFamily: 'var(--font-body)', fontSize: '12px', color: '#ec7063' }}>
@@ -992,7 +993,7 @@ export default function RandomizerPage() {
             ))}
           </div>
 
-          {/* ══ SINGLE MODE ══ */}
+          {/* ══ SINGLE MODE controls ══ */}
           {mode === 'single' && (
             <>
               <button
@@ -1016,20 +1017,10 @@ export default function RandomizerPage() {
                   {genError}
                 </div>
               )}
-
-              {combo && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ ...sectionLabel, marginBottom: '2px' }}>LEADERS</div>
-                  <LeaderCard leader={combo.leader1} onReroll={rerollL1} />
-                  <LeaderCard leader={combo.leader2} onReroll={rerollL2} />
-                  <div style={{ ...sectionLabel, marginTop: '6px', marginBottom: '2px' }}>BASE</div>
-                  <BaseCard base={combo.base} onReroll={rerollBase} />
-                </div>
-              )}
             </>
           )}
 
-          {/* ══ TOURNAMENT MODE ══ */}
+          {/* ══ TOURNAMENT MODE controls ══ */}
           {mode === 'tournament' && (
             <>
               {/* Players */}
@@ -1093,40 +1084,79 @@ export default function RandomizerPage() {
               >
                 ASSIGN COMBINATIONS
               </button>
-
-              {/* Results */}
-              {tResults.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {/* Export bar */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 14px', background: '#0d0d0d', border: '1px solid #1e1e1e',
-                    borderRadius: '8px',
-                  }}>
-                    <div style={sectionLabel}>ASSIGNMENTS ({tResults.length})</div>
-                    <button
-                      onClick={handleExport}
-                      disabled={exporting}
-                      style={{
-                        background: 'none', border: '1px solid #555', borderRadius: '5px',
-                        color: exporting ? '#444' : '#ccc',
-                        fontFamily: 'var(--font-heading)', fontSize: '9px', letterSpacing: '1.5px',
-                        padding: '5px 12px', cursor: exporting ? 'default' : 'pointer',
-                      }}
-                    >
-                      {exporting ? 'EXPORTING…' : '↓ EXPORT IMAGE'}
-                    </button>
-                  </div>
-
-                  {tResults.map((entry, i) => (
-                    <PlayerRow key={i} entry={entry} index={i} />
-                  ))}
-                </div>
-              )}
             </>
           )}
 
-          <div style={{ height: '24px' }} />
+        </div>
+
+        {/* RIGHT: Results panel */}
+        <div className="flex-1 lg:overflow-y-auto p-4 lg:p-6">
+
+          {/* Single: combo result */}
+          {mode === 'single' && combo && (
+            <div className="flex flex-col gap-4 max-w-4xl mx-auto">
+              <div>
+                <div style={sectionLabel} className="mb-2">LEADERS</div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <LeaderCard leader={combo.leader1} onReroll={rerollL1} />
+                  <LeaderCard leader={combo.leader2} onReroll={rerollL2} />
+                </div>
+              </div>
+              <div>
+                <div style={sectionLabel} className="mb-2">BASE</div>
+                <BaseCard base={combo.base} onReroll={rerollBase} />
+              </div>
+            </div>
+          )}
+
+          {/* Single: empty state on desktop */}
+          {mode === 'single' && !combo && (
+            <div className="hidden lg:flex h-full items-center justify-center">
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: '#2a2a2a', letterSpacing: '3px' }}>
+                GENERATE A COMBINATION TO BEGIN
+              </div>
+            </div>
+          )}
+
+          {/* Tournament: results */}
+          {mode === 'tournament' && tResults.length > 0 && (
+            <div className="flex flex-col gap-4 max-w-5xl mx-auto">
+              {/* Export bar */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 14px', background: '#0d0d0d', border: '1px solid #1e1e1e',
+                borderRadius: '8px',
+              }}>
+                <div style={sectionLabel}>ASSIGNMENTS ({tResults.length})</div>
+                <button
+                  onClick={handleExport}
+                  disabled={exporting}
+                  style={{
+                    background: 'none', border: '1px solid #555', borderRadius: '5px',
+                    color: exporting ? '#444' : '#ccc',
+                    fontFamily: 'var(--font-heading)', fontSize: '9px', letterSpacing: '1.5px',
+                    padding: '5px 12px', cursor: exporting ? 'default' : 'pointer',
+                  }}
+                >
+                  {exporting ? 'EXPORTING…' : '↓ EXPORT IMAGE'}
+                </button>
+              </div>
+              {/* Results: 1 col mobile, 2 col xl */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {tResults.map((entry, i) => <PlayerRow key={i} entry={entry} index={i} />)}
+              </div>
+            </div>
+          )}
+
+          {/* Tournament: empty state on desktop */}
+          {mode === 'tournament' && tResults.length === 0 && (
+            <div className="hidden lg:flex h-full items-center justify-center">
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', color: '#2a2a2a', letterSpacing: '3px' }}>
+                ASSIGN COMBINATIONS TO SEE RESULTS
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>
