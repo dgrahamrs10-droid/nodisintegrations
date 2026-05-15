@@ -20,6 +20,13 @@ async function fetchSwuapiSet(setCode: string): Promise<any[]> {
   return Array.isArray(json.cards) ? json.cards : [];
 }
 
+// Normalise card number to a plain integer string so keys match across
+// APIs: swu-db returns "008", swuapi returns "8" — both become "8".
+function normNum(n: string | number | null | undefined): string {
+  const i = parseInt(String(n ?? '0'), 10);
+  return isNaN(i) ? '0' : String(i);
+}
+
 // Returns a map of "SET-NUMBER" → swu-db card object (for ability text)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchSwudbTextMap(): Promise<Map<string, any>> {
@@ -32,7 +39,7 @@ async function fetchSwudbTextMap(): Promise<Map<string, any>> {
   const cards: any[] = json.data ?? [];
   for (const c of cards) {
     if (c.Type === 'Leader' && c.VariantType === 'Normal') {
-      map.set(`${c.Set}-${c.Number}`, c);
+      map.set(`${c.Set}-${normNum(c.Number)}`, c);
     }
   }
   return map;
@@ -52,8 +59,8 @@ export async function GET() {
     const data = raw
       .filter((c) => c.type === 'Leader' && c.variant_type === 'Standard')
       .map((c) => {
-        // Match to swu-db by Set + card number to retrieve ability text
-        const key = `${(c.set_code ?? '').toUpperCase()}-${c.card_number}`;
+        // Match to swu-db by Set + normalised card number to retrieve ability text
+        const key = `${(c.set_code ?? '').toUpperCase()}-${normNum(c.card_number)}`;
         const db = swudbMap.get(key);
         return {
           Type: 'Leader',
