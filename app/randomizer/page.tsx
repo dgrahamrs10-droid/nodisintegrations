@@ -226,7 +226,17 @@ function generateCombo(
   exclude: Set<string> = new Set(),
   maxAttempts = 400,
 ): Combo | null {
-  const available = pool.filter(l => !exclude.has(l.id));
+  let available = pool.filter(l => !exclude.has(l.id));
+
+  // Twin Twin Suns: drop any leader whose only valid twins are already
+  // excluded. Without this, orphaned leaders eat all random attempts and
+  // cause "no valid combination" even when pairs still exist.
+  if (twinTwinSuns) {
+    available = available.filter(l =>
+      available.some(other => other.id !== l.id && isTwinPair(l, other))
+    );
+  }
+
   if (available.length < 2) return null;
   for (let i = 0; i < maxAttempts; i++) {
     const i1 = Math.floor(Math.random() * available.length);
