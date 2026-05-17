@@ -82,6 +82,24 @@ const SET_NAMES: Record<string, string> = {
   TS26: 'Twin Suns 2026',
 };
 
+// Leaders excluded from the pool when "No Force" is active.
+// These are the specific LOF leaders the user wants removed.
+const NO_FORCE_LEADERS = new Set([
+  'Mother Talzin', 'Ahsoka Tano', 'Avar Kriss', 'Obi-Wan Kenobi',
+  'Darth Maul', 'Barriss Offee', 'Grand Inquisitor', 'Cal Kestis',
+  'Qui-Gon Jinn', 'Anakin Skywalker',
+]);
+
+// Traits that qualify for the Theme Team custom combo
+const THEME_TRAITS = new Set([
+  'Jedi', 'Rebel', 'Resistance', 'Imperial', 'Separatist', 'Sith',
+  'Underworld', 'Bounty Hunter', 'Republic', 'Mandalorian', 'Official',
+  'First Order', 'Night', 'Spectre', 'Fringe',
+]);
+
+// Color aspects only — used for Balanced Aspects check (Heroism/Villainy excluded)
+const COLOR_ASPECTS = new Set(['Command', 'Cunning', 'Aggression', 'Vigilance']);
+
 const BASE_META: Record<BaseType, { label: string; sublabel?: string; hex: string }> = {
   Command:     { label: 'Command',             hex: '#27ae60' },
   Cunning:     { label: 'Cunning',             hex: '#d4ac0d' },
@@ -116,12 +134,51 @@ function rollBase(): BaseType {
   return 'Command';
 }
 
+// DJ "I'm In It for the Money" counts as TWO Cunning aspects for deck building.
+// Add the extra Cunning here so triplet detection is accurate.
+function leaderAspects(leader: Leader): string[] {
+  if (leader.Name === 'DJ') return [...leader.Aspects, 'Cunning'];
+  return leader.Aspects;
+}
+
 function hasAspectTriplet(l1: Leader, l2: Leader, base: BaseType): boolean {
-  const aspects: string[] = [...l1.Aspects, ...l2.Aspects];
+  const aspects: string[] = [...leaderAspects(l1), ...leaderAspects(l2)];
   if (base !== 'LakeCountry' && base !== 'Wild') aspects.push(base);
   const counts: Record<string, number> = {};
   for (const a of aspects) counts[a] = (counts[a] ?? 0) + 1;
   return Object.values(counts).some(c => c >= 3);
+}
+
+// Balanced Aspects: no colour aspect repeated across leader1 + leader2 + base.
+// Uses l.Aspects directly (not leaderAspects), so DJ's single Cunning entry
+// is not treated as a duplicate — the DJ exception is automatic.
+function hasAspectDuplicate(l1: Leader, l2: Leader, base: BaseType): boolean {
+  const aspects: string[] = [
+    ...l1.Aspects.filter(a => COLOR_ASPECTS.has(a)),
+    ...l2.Aspects.filter(a => COLOR_ASPECTS.has(a)),
+  ];
+  if (base !== 'LakeCountry' && base !== 'Wild') aspects.push(base);
+  const counts: Record<string, number> = {};
+  for (const a of aspects) counts[a] = (counts[a] ?? 0) + 1;
+  return Object.values(counts).some(c => c >= 2);
+}
+
+// Canonical character name for Twin Twin Suns matching.
+// "Darth Maul" and "Maul" are the same character.
+function canonicalName(name: string): string {
+  const n = name.toLowerCase().trim();
+  if (n === 'darth maul') return 'maul';
+  return n;
+}
+
+// Twin Twin Suns: same character, different sets, compatible alignment.
+function isTwinPair(l1: Leader, l2: Leader): boolean {
+  return canonicalName(l1.Name) === canonicalName(l2.Name) && l1.Set !== l2.Set;
+}
+
+// Theme Team: leaders share at least one qualifying trait.
+function isThemeTeam(l1: Leader, l2: Leader): boolean {
+  return l1.Traits.some(t => THEME_TRAITS.has(t) && l2.Traits.includes(t));
 }
 
 function primaryAspect(leader: Leader): Aspect {
@@ -163,8 +220,11 @@ async function fetchLeaders(): Promise<Leader[]> {
 function generateCombo(
   pool: Leader[],
   noTriplets: boolean,
+  balancedAspects: boolean,
+  twinTwinSuns: boolean,
+  themeTeam: boolean,
   exclude: Set<string> = new Set(),
-  maxAttempts = 150,
+  maxAttempts = 400,
 ): Combo | null {
   const available = pool.filter(l => !exclude.has(l.id));
   if (available.length < 2) return null;
@@ -175,8 +235,11 @@ function generateCombo(
     const l1 = available[i1];
     const l2 = available[i2];
     if (!canPair(l1, l2)) continue;
+    if (twinTwinSuns && !isTwinPair(l1, l2)) continue;
+    if (themeTeam && !isThemeTeam(l1, l2)) continue;
     const base = rollBase();
     if (noTriplets && hasAspectTriplet(l1, l2, base)) continue;
+    if (balancedAspects && hasAspectDuplicate(l1, l2, base)) continue;
     return { leader1: l1, leader2: l2, base };
   }
   return null;
@@ -187,10 +250,16 @@ function generateTournamentCombos(
   pool: Leader[],
   noDuplicates: boolean,
   noTriplets: boolean,
+  balancedAspects: boolean,
+  twinTwinSuns: boolean,
+  themeTeam: boolean,
 ): TournamentEntry[] {
   const used = new Set<string>();
   return players.map(player => {
-    const combo = generateCombo(pool, noTriplets, noDuplicates ? used : new Set());
+    const combo = generateCombo(
+      pool, noTriplets, balancedAspects, twinTwinSuns, themeTeam,
+      noDuplicates ? used : new Set(),
+    );
     if (combo && noDuplicates) {
       used.add(combo.leader1.id);
       used.add(combo.leader2.id);
@@ -767,10 +836,16 @@ export default function RandomizerPage() {
   const [loading,   setLoading]   = useState(true);
   const [loadError, setLoadError] = useState('');
 
-  const [incCommon,  setIncCommon]  = useState(true);
-  const [incRare,    setIncRare]    = useState(true);
-  const [incSpecial, setIncSpecial] = useState(true);
-  const [noTriplets, setNoTriplets] = useState(false);
+  const [incCommon,       setIncCommon]       = useState(true);
+  const [incRare,         setIncRare]         = useState(true);
+  const [incSpecial,      setIncSpecial]      = useState(true);
+  const [noTriplets,      setNoTriplets]      = useState(false);
+  const [balancedAspects, setBalancedAspects] = useState(false);
+
+  // Custom combo modes
+  const [noForce,     setNoForce]     = useState(false);
+  const [twinTwinSuns, setTwinTwinSuns] = useState(false);
+  const [themeTeam,   setThemeTeam]   = useState(false);
 
   const [mode, setMode] = useState<'single' | 'tournament'>('single');
 
@@ -807,7 +882,9 @@ export default function RandomizerPage() {
     enabledSets.has(l.Set) &&
     ((l.Rarity === 'Common'  && incCommon)  ||
      (l.Rarity === 'Rare'    && incRare)    ||
-     (l.Rarity === 'Special' && incSpecial))
+     (l.Rarity === 'Special' && incSpecial)) &&
+    // No Force: remove the specific listed LOF leaders
+    !(noForce && l.Set === 'LOF' && NO_FORCE_LEADERS.has(l.Name))
   );
 
   const activeCount = [incCommon, incRare, incSpecial].filter(Boolean).length;
@@ -836,34 +913,40 @@ export default function RandomizerPage() {
 
   const generate = useCallback(() => {
     setGenError('');
-    const result = generateCombo(pool, noTriplets);
+    const result = generateCombo(pool, noTriplets, balancedAspects, twinTwinSuns, themeTeam);
     if (!result) { setGenError('No valid combination found. Try loosening restrictions.'); return; }
     setCombo(result);
-  }, [pool, noTriplets]);
+  }, [pool, noTriplets, balancedAspects, twinTwinSuns, themeTeam]);
 
   const rerollL1 = useCallback(() => {
     if (!combo) return;
     const available = pool.filter(l => l.id !== combo.leader2.id);
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 200; i++) {
       const l = available[Math.floor(Math.random() * available.length)];
       if (!canPair(l, combo.leader2)) continue;
+      if (twinTwinSuns && !isTwinPair(l, combo.leader2)) continue;
+      if (themeTeam && !isThemeTeam(l, combo.leader2)) continue;
       if (noTriplets && hasAspectTriplet(l, combo.leader2, combo.base)) continue;
+      if (balancedAspects && hasAspectDuplicate(l, combo.leader2, combo.base)) continue;
       setCombo({ ...combo, leader1: l }); return;
     }
     setGenError('Could not reroll Leader 1 with current restrictions.');
-  }, [combo, pool, noTriplets]);
+  }, [combo, pool, noTriplets, balancedAspects, twinTwinSuns, themeTeam]);
 
   const rerollL2 = useCallback(() => {
     if (!combo) return;
     const available = pool.filter(l => l.id !== combo.leader1.id);
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 200; i++) {
       const l = available[Math.floor(Math.random() * available.length)];
       if (!canPair(combo.leader1, l)) continue;
+      if (twinTwinSuns && !isTwinPair(combo.leader1, l)) continue;
+      if (themeTeam && !isThemeTeam(combo.leader1, l)) continue;
       if (noTriplets && hasAspectTriplet(combo.leader1, l, combo.base)) continue;
+      if (balancedAspects && hasAspectDuplicate(combo.leader1, l, combo.base)) continue;
       setCombo({ ...combo, leader2: l }); return;
     }
     setGenError('Could not reroll Leader 2 with current restrictions.');
-  }, [combo, pool, noTriplets]);
+  }, [combo, pool, noTriplets, balancedAspects, twinTwinSuns, themeTeam]);
 
   const rerollBase = useCallback(() => {
     if (!combo) return;
@@ -876,8 +959,8 @@ export default function RandomizerPage() {
   }, [combo, noTriplets]);
 
   const assignTournament = useCallback(() => {
-    setTResults(generateTournamentCombos(players, pool, noDuplicates, noTriplets));
-  }, [players, pool, noDuplicates, noTriplets]);
+    setTResults(generateTournamentCombos(players, pool, noDuplicates, noTriplets, balancedAspects, twinTwinSuns, themeTeam));
+  }, [players, pool, noDuplicates, noTriplets, balancedAspects, twinTwinSuns, themeTeam]);
 
   const handleExport = async () => {
     if (!tResults.length) return;
@@ -954,6 +1037,7 @@ export default function RandomizerPage() {
               <button onClick={() => toggleRarity('Special')} style={chip(incSpecial, '#f7931e')}>SPECIAL</button>
               <div style={{ width: '1px', height: '18px', background: '#1e1e1e', margin: '0 2px' }} />
               <button onClick={() => setNoTriplets(v => !v)} style={chip(noTriplets, '#c39bd3')}>NO TRIPLETS</button>
+              <button onClick={() => setBalancedAspects(v => !v)} style={chip(balancedAspects, '#5dade2')}>BALANCED ASPECTS</button>
             </div>
           </section>
 
@@ -990,6 +1074,53 @@ export default function RandomizerPage() {
               </div>
             </section>
           )}
+
+          {/* ── Custom Combos ── */}
+          <section>
+            <div style={{ ...sectionLabel, marginBottom: '10px' }}>CUSTOM COMBOS</div>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setNoForce(v => !v)}
+                title="Removes Force-trait leaders from Legends of the Force"
+                style={chip(noForce, '#e74c3c')}
+              >
+                NO FORCE
+              </button>
+              <button
+                onClick={() => setTwinTwinSuns(v => !v)}
+                title="Both leaders must be the same character from different sets"
+                style={chip(twinTwinSuns, '#f7931e')}
+              >
+                TWIN TWIN SUNS
+              </button>
+              <button
+                onClick={() => setThemeTeam(v => !v)}
+                title="Both leaders must share a qualifying trait (Jedi, Rebel, Sith, etc.)"
+                style={chip(themeTeam, '#27ae60')}
+              >
+                THEME TEAM
+              </button>
+            </div>
+            {(noForce || twinTwinSuns || themeTeam) && (
+              <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                {noForce && (
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: '#e74c3c', letterSpacing: '0.5px' }}>
+                    ✕ 10 specific LOF leaders excluded from pool
+                  </div>
+                )}
+                {twinTwinSuns && (
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: '#f7931e', letterSpacing: '0.5px' }}>
+                    ⬡ Same character, different sets (Maul = Darth Maul)
+                  </div>
+                )}
+                {themeTeam && (
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: '#27ae60', letterSpacing: '0.5px' }}>
+                    ◈ Leaders must share a trait: Jedi, Rebel, Sith, Imperial…
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
 
           {/* ── Mode tabs ── */}
           <div style={{ display: 'flex', gap: '6px', background: '#0d0d0d', padding: '4px', borderRadius: '10px', border: '1px solid #1a1a1a' }}>
