@@ -93,7 +93,7 @@ const NO_FORCE_LEADERS = new Set([
 // Traits that qualify for the Theme Team custom combo
 const THEME_TRAITS = new Set([
   'Jedi', 'Rebel', 'Resistance', 'Imperial', 'Separatist', 'Sith',
-  'Underworld', 'Bounty Hunter', 'Republic', 'Mandalorian', 'Official',
+  'Underworld', 'Bounty Hunter', 'Republic', 'Mandalorian',
   'First Order', 'Night', 'Spectre', 'Fringe',
 ]);
 
