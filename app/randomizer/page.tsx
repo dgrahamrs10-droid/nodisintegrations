@@ -852,10 +852,15 @@ export default function RandomizerPage() {
   const [noTriplets,      setNoTriplets]      = useState(false);
   const [balancedAspects, setBalancedAspects] = useState(false);
 
-  // Custom combo modes
-  const [noForce,     setNoForce]     = useState(false);
-  const [twinTwinSuns, setTwinTwinSuns] = useState(false);
-  const [themeTeam,   setThemeTeam]   = useState(false);
+  // Custom combo modes — mutually exclusive
+  type CustomCombo = 'noForce' | 'twinTwinSuns' | 'themeTeam' | null;
+  const [customCombo, setCustomCombo] = useState<CustomCombo>(null);
+  const noForce     = customCombo === 'noForce';
+  const twinTwinSuns = customCombo === 'twinTwinSuns';
+  const themeTeam   = customCombo === 'themeTeam';
+  function toggleCustomCombo(val: CustomCombo) {
+    setCustomCombo(prev => prev === val ? null : val);
+  }
 
   const [mode, setMode] = useState<'single' | 'tournament'>('single');
 
@@ -1090,21 +1095,21 @@ export default function RandomizerPage() {
             <div style={{ ...sectionLabel, marginBottom: '10px' }}>CUSTOM COMBOS</div>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               <button
-                onClick={() => setNoForce(v => !v)}
-                title="Removes Force-trait leaders from Legends of the Force"
+                onClick={() => toggleCustomCombo('noForce')}
+                title="Removes the 10 specific LOF Force leaders from the pool"
                 style={chip(noForce, '#e74c3c')}
               >
                 NO FORCE
               </button>
               <button
-                onClick={() => setTwinTwinSuns(v => !v)}
+                onClick={() => toggleCustomCombo('twinTwinSuns')}
                 title="Both leaders must be the same character from different sets"
                 style={chip(twinTwinSuns, '#f7931e')}
               >
                 TWIN TWIN SUNS
               </button>
               <button
-                onClick={() => setThemeTeam(v => !v)}
+                onClick={() => toggleCustomCombo('themeTeam')}
                 title="Both leaders must share a qualifying trait (Jedi, Rebel, Sith, etc.)"
                 style={chip(themeTeam, '#27ae60')}
               >
