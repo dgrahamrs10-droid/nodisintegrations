@@ -343,7 +343,7 @@ export default function ProxiesPage() {
             }}>
               {loadingCards
                 ? 'Loading…'
-                : `${filteredCards.length} of ${cards.length} · filter: "${typeFilter}" · sample type: "${cards[0]?.Type ?? 'none'}"`
+                : `${filteredCards.length} of ${cards.length} · filter: "${typeFilter}" · first filtered card type: "${filteredCards[0]?.Type ?? 'none'}"`
               }
             </div>
 
