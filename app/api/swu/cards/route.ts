@@ -55,8 +55,17 @@ export async function GET(req: NextRequest) {
 
   // Keep only Standard (non-variant) cards and normalise field names
   // to the shape the client SWUCard interface expects.
+  // Deduplicate by UUID first — swuapi can return multiple Standard
+  // records for the same card, causing duplicate React keys that prevent
+  // the type-filter DOM updates from rendering correctly.
+  const seenUuids = new Set<string>();
   let cards: SWUCard[] = raw
-    .filter((c) => c.variant_type === 'Standard')
+    .filter((c) => {
+      if (c.variant_type !== 'Standard') return false;
+      if (seenUuids.has(c.uuid)) return false;
+      seenUuids.add(c.uuid);
+      return true;
+    })
     .map((c) => ({
       Set:        (c.set_code        ?? '')        as string,
       Number:     (c.card_number     ?? '')        as string,
