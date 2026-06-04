@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -40,7 +40,8 @@ const RARITY_COLOR: Record<string, string> = {
   Special:   '#bc8cff',
 };
 
-const CARD_TYPES = ['All', 'Leader', 'Unit', 'Base', 'Event', 'Upgrade'];
+// Card types are derived from loaded card data rather than hardcoded
+// so the dropdown always reflects what the API actually returns.
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -105,6 +106,12 @@ export default function ProxiesPage() {
       .catch(console.error)
       .finally(() => setLoadingCards(false));
   }, [selectedSet]);
+
+  // Build type options from whatever the API actually returned for this set
+  const cardTypes = useMemo(() => {
+    const types = Array.from(new Set(cards.map(c => c.Type).filter(Boolean))).sort();
+    return ['All', ...types];
+  }, [cards]);
 
   // Filtered card list
   const filteredCards = cards.filter(c => {
@@ -310,7 +317,7 @@ export default function ProxiesPage() {
                   letterSpacing: '1px', padding: '7px 10px', cursor: 'pointer', flexShrink: 0,
                 }}
               >
-                {CARD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                {cardTypes.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
 
               {/* Name search */}
