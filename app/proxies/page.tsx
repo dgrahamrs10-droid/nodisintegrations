@@ -147,7 +147,7 @@ export default function ProxiesPage() {
 
   // Build print data
   const printImages = buildPrintImages(Array.from(printList.values()));
-  const printPages: string[][] = [];
+  const printPages: PrintImage[][] = [];
   for (let i = 0; i < printImages.length; i += 9) {
     printPages.push(printImages.slice(i, i + 9));
   }
