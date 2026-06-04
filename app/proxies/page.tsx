@@ -13,6 +13,7 @@ interface SWUSet {
 }
 
 interface SWUCard {
+  uuid: string;
   Set: string;
   Number: string;
   Name: string;
@@ -66,7 +67,7 @@ function buildPrintImages(entries: PrintEntry[]): PrintImage[] {
 }
 
 function cardKey(card: SWUCard) {
-  return `${card.Set}-${card.Number}`;
+  return card.uuid || `${card.Set}-${card.Number}`;
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────

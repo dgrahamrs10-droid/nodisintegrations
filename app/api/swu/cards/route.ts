@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const SWUAPI = 'https://api.swuapi.com';
 
 interface SWUCard {
+  uuid: string;
   Set: string;
   Number: string;
   Name: string;
@@ -67,6 +68,7 @@ export async function GET(req: NextRequest) {
       return true;
     })
     .map((c) => ({
+      uuid:       (c.uuid            ?? '')        as string,
       Set:        (c.set_code        ?? '')        as string,
       Number:     (c.card_number     ?? '')        as string,
       Name:       (c.name            ?? '')        as string,
