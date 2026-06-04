@@ -135,6 +135,26 @@ export default function HomePage() {
             ⬡ Twin Suns Randomizer
           </button>
         </Link>
+
+        <Link href="/proxies" style={{ textDecoration: 'none' }}>
+          <button
+            style={{
+              width: '100%',
+              padding: '16px 20px',
+              background: 'linear-gradient(135deg, #1a1a1a, #222)',
+              border: '1px solid #333',
+              borderRadius: '12px',
+              color: '#888',
+              fontFamily: 'var(--font-heading)',
+              fontSize: '14px',
+              letterSpacing: '3px',
+              fontWeight: '700',
+              cursor: 'pointer',
+            }}
+          >
+            ✦ Proxy Sheets
+          </button>
+        </Link>
       </div>
 
       {/* Footer */}
